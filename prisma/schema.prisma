@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String
+  name          String?
+  role          String         @default("EMPLOYEE")
+  isApproved    Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  conversations Conversation[]
+  auditLogs     AuditLog[]
+}
+
+model Tool {
+  id             String         @id @default(cuid())
+  name           String
+  description    String
+  icon           String?
+  cozeType       String         @default("BOT")
+  cozeBotId      String?
+  cozeWorkflowId String?
+  isEnabled      Boolean        @default(true)
+  sortOrder      Int            @default(0)
+  createdAt      DateTime       @default(now())
+  conversations  Conversation[]
+}
+
+model Conversation {
+  id                 String    @id @default(cuid())
+  userId             String
+  toolId             String
+  cozeConversationId String?
+  title              String    @default("新对话")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tool               Tool      @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  messages           Message[]
+
+  @@index([userId])
+  @@index([toolId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  contentType    String       @default("text")
+  attachments    String?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  detail    String?
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([createdAt])
+}
