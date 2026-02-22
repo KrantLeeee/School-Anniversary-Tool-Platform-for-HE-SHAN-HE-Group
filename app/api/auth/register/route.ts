@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { db } from '@/lib/db'
+import { getClientInfo } from '@/lib/request-utils'
 
 export async function POST(req: NextRequest) {
   try {
@@ -26,23 +27,26 @@ export async function POST(req: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12)
 
-    // Create user
+    // Create user (requires admin approval)
     const user = await db.user.create({
       data: {
         email,
         passwordHash,
         name: name || null,
         role: 'EMPLOYEE',
-        isApproved: true, // MVP: auto-approve
+        isApproved: false,
       },
     })
 
-    // Log registration
+    // Log registration with IP info
+    const { ip, userAgent } = getClientInfo(req)
     await db.auditLog.create({
       data: {
         userId: user.id,
         action: 'REGISTER',
         detail: `New user registered: ${user.email}`,
+        ip,
+        userAgent,
       },
     })
 
@@ -50,6 +54,7 @@ export async function POST(req: NextRequest) {
       id: user.id,
       email: user.email,
       name: user.name,
+      message: '注册成功！请等待管理员审批后登录。',
     })
   } catch (error) {
     console.error('Register error:', error)

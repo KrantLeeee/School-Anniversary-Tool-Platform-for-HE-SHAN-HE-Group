@@ -8,15 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(cuid())
-  email         String         @unique
-  passwordHash  String
-  name          String?
-  role          String         @default("EMPLOYEE")
-  isApproved    Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  conversations Conversation[]
-  auditLogs     AuditLog[]
+  id             String         @id @default(cuid())
+  email          String         @unique
+  passwordHash   String
+  name           String?
+  role           String         @default("EMPLOYEE")
+  isApproved     Boolean        @default(false)
+  failedAttempts Int            @default(0)
+  lockedUntil    DateTime?
+  createdAt      DateTime       @default(now())
+  conversations  Conversation[]
+  auditLogs      AuditLog[]
 }
 
 model Tool {

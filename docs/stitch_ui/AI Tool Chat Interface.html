@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Tool Chat Interface</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#1a1a1a", // Deep black/charcoal for main actions
+                        "primary-hover": "#333333",
+                        "accent-orange": "#FF8F6B", // From reference image 1
+                        "accent-green": "#85D1B5", // From reference image 1
+                        "accent-pink": "#FFB7C5", // From reference image 1
+                        "background-light": "#F9F8F6", // Warm off-white
+                        "background-dark": "#121212", // Dark mode bg
+                        "surface-light": "#FFFFFF",
+                        "surface-dark": "#1E1E1E",
+                        "border-light": "#E5E5E5",
+                        "border-dark": "#333333",
+                        "text-primary-light": "#111827",
+                        "text-primary-dark": "#F3F4F6",
+                        "text-secondary-light": "#6B7280",
+                        "text-secondary-dark": "#9CA3AF",
+                    },
+                    fontFamily: {
+                        display: ['"Noto Sans SC"', "sans-serif"],
+                        body: ['"Noto Sans SC"', "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.75rem",
+                        'xl': "1rem",
+                        '2xl': "1.5rem",
+                        '3xl': "2rem",
+                    },
+                    boxShadow: {
+                        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                        'float': '0 10px 40px -10px rgba(0, 0, 0, 0.08)',
+                        'inner-soft': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.02)',
+                    }
+                },
+            },
+        };
+    </script>
+<style>::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.3);
+            border-radius: 20px;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background-color: #9CA3AF;
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out both;
+            margin: 0 1px;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }.hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-body h-screen flex overflow-hidden text-text-primary-light dark:text-text-primary-dark transition-colors duration-200">
+<aside class="w-64 flex-shrink-0 bg-surface-light/50 dark:bg-surface-dark/50 border-r border-border-light dark:border-border-dark flex flex-col backdrop-blur-sm hidden md:flex">
+<div class="p-5">
+<button class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white py-3 px-4 rounded-xl transition-all shadow-md group">
+<span class="material-icons-round text-xl group-hover:rotate-90 transition-transform">add</span>
+<span class="font-medium">æ°å»ºåä½</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto px-3 pb-4 space-y-6">
+<div>
+<h3 class="px-3 text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-2">ä»å¤©</h3>
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-white dark:bg-white/5 shadow-sm border border-border-light dark:border-border-dark hover:border-gray-300 dark:hover:border-gray-600 transition-colors" href="#">
+<span class="material-icons-outlined text-sm text-accent-orange">movie_creation</span>
+<span class="text-sm truncate">å¤å¤é£æ ¼å¹¿ååé...</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-white/60 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-outlined text-sm">image</span>
+<span class="text-sm truncate">è¿å¨éäº§åå¾çæ</span>
+</a>
+</li>
+</ul>
+</div>
+<div>
+<h3 class="px-3 text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-2">æ¬å¨</h3>
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-white/60 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-outlined text-sm">edit_note</span>
+<span class="text-sm truncate">å¤å­£ä¿éææ¡ä¼å</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-white/60 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-outlined text-sm">palette</span>
+<span class="text-sm truncate">Logo éè²æ¹æ¡</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-white/60 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-outlined text-sm">analytics</span>
+<span class="text-sm truncate">ç«ååææ¥å</span>
+</a>
+</li>
+</ul>
+</div>
+<div>
+<h3 class="px-3 text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider mb-2">æ´æ©</h3>
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-white/60 dark:hover:bg-white/5 transition-colors" href="#">
+<span class="material-icons-outlined text-sm">campaign</span>
+<span class="text-sm truncate">æ°å¹´è¥éç­å</span>
+</a>
+</li>
+</ul>
+</div>
+</div>
+<div class="p-4 border-t border-border-light dark:border-border-dark flex items-center gap-3">
+<img alt="User Avatar" class="w-9 h-9 rounded-full border border-white dark:border-gray-700 shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBo5Ed7Aro8MiOd7btQLTu2LH2qlNQB5kX4WEeo7hpDHWtsnxCI60BxfZuXHN6pYLyTTULpJfmLfT0pMINgIx7icr1i4RriSLuhAypUG1H2A5kNOZf11j7WEYX4E23gwr93FB1YedjnSYWn-yLtryocQKyZw-Jdjtw3a4dEjfUMUoHBWtzFYZwErKu19nBjjluHFuGfdLPcOQW07k_btsro3MNsEO2O0P2dPJxrUK0ufBhnQ4FHdaTJ3sJz-ufcWmDYSKDKlBM7Zuo"/>
+<div class="flex-1 overflow-hidden">
+<p class="text-sm font-medium truncate">Dylançè®¾è®¡å¸</p>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark truncate">Pro è®¡å</p>
+</div>
+<button class="text-text-secondary-light dark:text-text-secondary-dark hover:text-primary dark:hover:text-white transition-colors">
+<span class="material-icons-outlined text-xl">settings</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col relative h-full">
+<header class="md:hidden flex items-center justify-between p-4 border-b border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark">
+<button class="text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons-round">menu</span>
+</button>
+<span class="font-medium">åéçæå¨</span>
+<div class="w-8"></div>
+</header>
+<header class="hidden md:flex items-center justify-between px-8 py-5 absolute top-0 w-full z-10">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-white/50 dark:bg-black/20 rounded-lg backdrop-blur-sm border border-transparent hover:border-border-light dark:hover:border-border-dark transition-all cursor-pointer">
+<span class="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">æ¨¡å:</span>
+<span class="text-sm font-semibold flex items-center gap-1">
+                    StoryGen V4
+                    <span class="material-icons-round text-sm">expand_more</span>
+</span>
+</div>
+<div class="flex gap-4">
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-icons-outlined text-text-secondary-light dark:text-text-secondary-dark text-lg">ios_share</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-icons-outlined text-text-secondary-light dark:text-text-secondary-dark text-lg">more_horiz</span>
+</button>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto px-4 md:px-20 pt-20 pb-40">
+<div class="max-w-3xl mx-auto space-y-8">
+<div class="flex gap-4 md:gap-6">
+<div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-accent-orange to-accent-pink flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                        AI
+                    </div>
+<div class="flex-1 space-y-4">
+<div class="prose dark:prose-invert prose-p:text-text-primary-light dark:prose-p:text-text-primary-dark max-w-none">
+<p class="text-lg md:text-xl font-medium leading-relaxed">
+                                æ©ä¸å¥½ï¼Dylanãåå¤å¥½ç»§ç»­ä½ çåä½äºåï¼<br/>
+                                æå·²ç»åå¤å¥½å¸®ä½ çææ°çåéèæ¬æä¼åç°æçåææ¹æ¡ã
+                            </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+<button class="text-left group relative overflow-hidden rounded-2xl p-4 bg-orange-100/50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-all border border-transparent hover:border-accent-orange/30">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-accent-orange/20 rounded-full blur-xl group-hover:bg-accent-orange/30 transition-colors"></div>
+<span class="material-icons-round text-accent-orange mb-2 block text-3xl">storefront</span>
+<h4 class="font-bold text-sm mb-1">Tæ¤ä¸å¡åä¸</h4>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">4ä¸ªæ ç­¾ Â· 1å¤©å</p>
+</button>
+<button class="text-left group relative overflow-hidden rounded-2xl p-4 bg-green-100/50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 transition-all border border-transparent hover:border-accent-green/30">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-accent-green/20 rounded-full blur-xl group-hover:bg-accent-green/30 transition-colors"></div>
+<span class="material-icons-round text-accent-green mb-2 block text-3xl">sports_football</span>
+<h4 class="font-bold text-sm mb-1">è¶³çç²¾å½©éé¦</h4>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">4ä¸ªæ ç­¾ Â· 1å¤©å</p>
+</button>
+<button class="text-left group relative overflow-hidden rounded-2xl p-4 bg-pink-100/50 dark:bg-pink-900/20 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition-all border border-transparent hover:border-accent-pink/30">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-accent-pink/20 rounded-full blur-xl group-hover:bg-accent-pink/30 transition-colors"></div>
+<span class="material-icons-round text-accent-pink mb-2 block text-3xl">sports_esports</span>
+<h4 class="font-bold text-sm mb-1">æç±æ¸¸æåé¡¾</h4>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark">3ä¸ªæ ç­¾ Â· 1å¤©å</p>
+</button>
+</div>
+</div>
+</div>
+<div class="flex gap-4 md:gap-6 flex-row-reverse">
+<img alt="User" class="w-8 h-8 md:w-10 md:h-10 rounded-full shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCcvF48Igx4ku92N_IA8MEzvPksl0Iil3eZ85VktK5ULDLHCxpEIOWmzBGzQM0Jbw2vRedRauTJ__ffsFMQKuGXuVU0_VAOeXl-2i97pgAOxfD2pH0fBLmnAhpOrj5-Bwn0Ih8KFaIJgeNhDPMq9W1wc6GPYsSIJf0sM5rjvhNSXIv4yqbgEndtgGUvMeCs7QtHkHno9qXM5OQuP2oW4A2djooxNCCDTyius8laY6R6j_IwlfnxpUp0d6LnNjuW_nwVW7ywhaXPz_g"/>
+<div class="bg-white dark:bg-surface-dark/80 p-5 rounded-2xl rounded-tr-none shadow-soft border border-border-light dark:border-border-dark max-w-2xl">
+<div class="grid grid-cols-3 gap-2 mb-4">
+<div class="aspect-square rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden relative group">
+<img alt="red shoe" class="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3gb5X8goperzo1AaiYSoaRFcA6YlLIXvjyLQbOeAhUelxmK82gCLe1go3V82cEoq8uGz1MxQiWGhILvHQr00dzvHhUYfqbclfOadxuvQvvP-vF_GBKxnHr08u6akh02NnUdoQdGi-SC6GX9rgCkUBUYS2jhRQ8zHEAxjXNKDJ-yhEhQMSv5KvUaEFyYz2VKs5ThuwUtS6kdhyT16S0IBGvEODbrbdXFaJKavadWmgDAVUXr9g-5Vod36d6oYPidlEBJBKZ3NEduM"/>
+</div>
+<div class="aspect-square rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden relative group">
+<img alt="sneaker art" class="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcofIcsAZslIXP2CofVZv6iDMnOMiM6cGfYMrW8F-WyVjULFOxVW5G_tzQx-loAvXUGLCi5o7L2zLZRHmFFV5TxyuqyeZR2mZXVx2ptbJKNofKGE3ZHWUaTl11mOj0H30FppArGFddRtf6pPy51QmL1-psYIQQCJmWva__kcwBPQzKDS8BTncJZjrlD_h6PuwpZcbstKt9Gxnx2UDhHGdRilMuMLtLIITxXgrrtA1WY-PBGkJ8ccCaroMNEiP_OJ5NlqDveMId8lI"/>
+</div>
+<div class="aspect-square rounded-lg bg-gray-100 dark:bg-gray-800 overflow-hidden relative group">
+<img alt="green shoe" class="object-cover w-full h-full transform group-hover:scale-110 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7hRQtGC9aE-JEz0oZu_60aLHzjDcGbOFzC7gPzXIpScO2dtS15ATfjr7xoHaNC-kxYA55SLBKctksFtZruSlRXSkZk8XpvaZNvMmqB7HNVJmpGGj9yhpNVids1TdivanoUKLb69p2uyrDf_Cn6UElB4M_VuVBECjjtRI4W3mszj_55Fo3borWP1vFye7gnP1pm1g06LGOHdc6CLp0Sm8GGSQIl-2_aNg3IVeLaqXakkiS0NFUzmAJBCAZk2JH9zCerlUHnTExxXM"/>
+</div>
+</div>
+<p class="text-text-primary-light dark:text-text-primary-dark">ä½¿ç¨ä¸ä¼ çæäºæ¿ç´ æï¼åå»ºä¸ä¸ª30ç§çå¤å¤é£æ ¼å¹¿åç­è§é¢èæ¬ãéç¹çªåºè²å½©å¯¹æ¯åææ§æ°å´ã</p>
+</div>
+</div>
+<div class="flex gap-4 md:gap-6">
+<div class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-accent-orange to-accent-pink flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                        AI
+                    </div>
+<div class="flex-1">
+<div class="bg-white/50 dark:bg-white/5 backdrop-blur-sm p-6 rounded-2xl rounded-tl-none border border-border-light/50 dark:border-border-dark/50 shadow-sm">
+<h3 class="font-bold mb-3 flex items-center gap-2">
+<span class="material-icons-round text-accent-orange text-lg">movie_filter</span>
+                                çæèæ¬å¤§çº²
+                            </h3>
+<div class="space-y-4 text-text-primary-light dark:text-text-primary-dark leading-relaxed">
+<div class="pl-4 border-l-2 border-accent-orange/30">
+<p class="font-semibold text-sm text-accent-orange mb-1">åºæ¯ 1 (00:00 - 00:05)</p>
+<p class="text-sm">æ·¡å¥ãç¹åéå¤´æ«æç¬¬ä¸å¼ çº¢è²è¿å¨éãç»é¢å¸¦æè½»å¾®çåªç¹åè¶çé¢ç²æãèæ¯é³æ¯80å¹´ä»£åæå¨æµè¡ä¹çä½æ²åå¥ã</p>
+</div>
+<div class="pl-4 border-l-2 border-accent-green/30">
+<p class="font-semibold text-sm text-accent-green mb-1">åºæ¯ 2 (00:05 - 00:12)</p>
+<p class="text-sm">å¿«éåªè¾ãç»é¢åæ¢è³ç»¿è²è¿å¨éï¼è²å½©çªç¶åå¾é²è³ï¼ä¸èæ¯çåè²è°å½¢æå¼ºçå¯¹æ¯ãæå­âClassic Rebornâä»¥éè¹ç¯ç®¡å­ä½æµ®ç°ã</p>
+</div>
+<div class="pl-4 border-l-2 border-accent-pink/30">
+<p class="font-semibold text-sm text-accent-pink mb-1">åºæ¯ 3 (00:12 - 00:20)</p>
+<p class="text-sm">æ¨¡ç¹ç©¿çç½è²è£å­åä¸çç»é¢ï¼åèå¾2ï¼ä»¥æ¢å¨ä½æ­æ¾ãåæ¾ææãå¥¹ä¼¼ä¹æ¯ä»å°æ¿ä¸âæµ®âèµ·æ¥ã</p>
+<span class="inline-block w-1.5 h-4 bg-primary dark:bg-white animate-pulse ml-1 align-middle"></span>
+</div>
+</div>
+</div>
+<div class="mt-2 flex gap-2">
+<button class="px-3 py-1.5 bg-white dark:bg-white/5 border border-border-light dark:border-border-dark rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">çæè§é¢é¢è§</button>
+<button class="px-3 py-1.5 bg-white dark:bg-white/5 border border-border-light dark:border-border-dark rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-white/10 transition-colors">ä¿®æ¹é£æ ¼</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-6 md:bottom-10 left-0 right-0 px-4 flex justify-center z-20">
+<div class="w-full max-w-3xl bg-surface-light dark:bg-[#1E1E1E] rounded-3xl shadow-float border border-white/50 dark:border-white/10 p-2 md:p-3 relative backdrop-blur-xl">
+<div class="relative flex flex-col">
+<textarea class="w-full bg-transparent border-0 focus:ring-0 resize-none py-3 px-4 text-text-primary-light dark:text-text-primary-dark placeholder-text-secondary-light/70 dark:placeholder-text-secondary-dark/70 font-light text-base md:text-lg max-h-32" placeholder="è¾å¥é¾æ¥æè¯¢é®ä»»ä½äºæ..." rows="1" style="min-height: 52px;"></textarea>
+<div class="flex items-center justify-between px-2 pt-1 pb-1">
+<div class="flex items-center gap-1 md:gap-2">
+<button class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-text-secondary-light dark:text-text-secondary-dark" title="Add">
+<span class="material-icons-round text-2xl">add</span>
+</button>
+<button class="hidden md:flex items-center gap-2 h-10 px-3 rounded-xl bg-gray-100/80 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 transition-colors text-text-primary-light dark:text-text-primary-dark border border-transparent dark:border-white/5">
+<span class="material-icons-outlined text-lg">auto_fix_high</span>
+<span class="text-sm font-medium">ä¼å</span>
+</button>
+<div class="flex items-center bg-gray-100/80 dark:bg-white/5 rounded-xl p-1 border border-transparent dark:border-white/5">
+<button class="flex items-center gap-2 h-8 px-3 rounded-lg hover:bg-white dark:hover:bg-white/10 transition-all shadow-sm hover:shadow text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark">
+<span class="material-icons-outlined text-lg">image</span>
+<span class="text-sm font-medium hidden sm:inline">å¾å</span>
+</button>
+<button class="flex items-center gap-2 h-8 px-3 rounded-lg hover:bg-white dark:hover:bg-white/10 transition-all hover:shadow text-text-secondary-light dark:text-text-secondary-dark hover:text-text-primary-light dark:hover:text-text-primary-dark">
+<span class="material-icons-outlined text-lg">smart_display</span>
+<span class="text-sm font-medium hidden sm:inline">è§é¢</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-text-secondary-light dark:text-text-secondary-dark">
+<span class="material-icons-outlined">mic</span>
+</button>
+<button class="w-12 h-12 flex items-center justify-center bg-primary hover:bg-primary-hover text-white rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200">
+<span class="material-icons-round">arrow_upward</span>
+</button>
+</div>
+</div>
+</div>
+<div class="absolute -top-10 left-4 opacity-0 transition-opacity duration-300 md:opacity-100 pointer-events-none">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-white/80 dark:bg-black/40 backdrop-blur-md rounded-full border border-white/20 shadow-sm">
+<span class="w-4 h-4 rounded-full bg-gradient-to-tr from-blue-400 to-purple-500"></span>
+<span class="text-xs font-medium text-text-secondary-light dark:text-text-secondary-dark">AI åæå©æå¨çº¿</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+</body></html>
