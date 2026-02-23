@@ -1,4 +1,5 @@
 import NextAuth from 'next-auth'
+import { authConfig } from './auth.config'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { db } from './db'
@@ -7,6 +8,7 @@ const MAX_FAILED_ATTEMPTS = 5
 const LOCKOUT_DURATION_MINUTES = 15
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       credentials: {
@@ -100,27 +102,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       },
     }),
   ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = (user as any).role
-      }
-      return token
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.id as string
-        session.user.role = token.role as string
-      }
-      return session
-    },
-  },
-  pages: {
-    signIn: '/login',
-  },
-  session: {
-    strategy: 'jwt',
-    maxAge: 8 * 60 * 60, // 8 hours
-  },
 })
