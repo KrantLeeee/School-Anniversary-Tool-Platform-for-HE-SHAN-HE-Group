@@ -64,6 +64,28 @@ async function main() {
   })
 
   console.log('Created new tool:', tool2.name)
+
+  const tool3 = await prisma.tool.upsert({
+    where: { id: 'school-research-tool' },
+    update: {
+      cozeBotId: 'school-research-assistant',
+      name: '校领导及校情综合调研助手',
+      description: '精准整合公开信息、预判校庆相关项目方向，输出结构化、精准化、实用化的调研结果。',
+      icon: '🔎',
+    },
+    create: {
+      id: 'school-research-tool',
+      name: '校领导及校情综合调研助手',
+      description: '精准整合公开信息、预判校庆相关项目方向，输出结构化、精准化、实用化的调研结果。',
+      icon: '🔎',
+      cozeType: 'BOT',
+      cozeBotId: 'school-research-assistant',
+      isEnabled: true,
+      sortOrder: 3,
+    },
+  })
+
+  console.log('Created new tool:', tool3.name)
 }
 
 main()
