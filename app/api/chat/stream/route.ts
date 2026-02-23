@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { streamCozeSiteChat, extractContent, extractSessionId, extractError, generateSessionId } from '@/lib/coze/chat'
+import { AgentRegistry } from '@/lib/agents/registry'
 import { getClientInfo } from '@/lib/request-utils'
 
 export const runtime = 'nodejs'
@@ -52,22 +52,24 @@ export async function POST(req: NextRequest) {
       return new Response('Tool not found or disabled', { status: 404 })
     }
 
+    // Instanciate our Agent
+    const agent = AgentRegistry.getAgent(tool.cozeBotId || 'scene-3d-generator') || AgentRegistry.getDefaultAgent()
+
     // Get or create conversation in our DB
     let conversation = conversationId
       ? await db.conversation.findUnique({ where: { id: conversationId } })
       : null
 
-    // Generate session ID for Coze (use existing or create new)
-    let cozeSessionId = conversation?.cozeConversationId || generateSessionId()
+    let cozeConversationId = conversation?.cozeConversationId || undefined
 
     if (!conversation) {
-      const title = generateTitle(message || 'File upload')
+      const title = generateTitle(message || '文件上传')
       conversation = await db.conversation.create({
         data: {
           userId: session.user.id,
           toolId: tool.id,
           title,
-          cozeConversationId: cozeSessionId,
+          cozeConversationId: undefined,
         },
       })
     }
@@ -83,7 +85,6 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Capture client info for audit logging
     const clientInfo = getClientInfo(req)
 
     // Create SSE stream
@@ -94,41 +95,26 @@ export async function POST(req: NextRequest) {
           let fullResponse = ''
           let lastError: string | undefined
 
-          console.log('Starting Coze Site stream with session:', cozeSessionId)
+          console.log(`Starting Custom Agent stream for tool: ${tool.name} using ${agent.constructor.name}`)
 
-          // Stream from Coze Site API
-          for await (const chunk of streamCozeSiteChat({
+          // Stream from our Custom Agent implementation
+          for await (const chunk of agent.streamChat({
             message: message || '',
-            sessionId: cozeSessionId,
+            conversationId: conversation!.id, // Pass our internal conversation ID for history
             userId: session.user.id,
             attachments: attachments as Attachment[] | undefined,
           })) {
-            console.log('Received chunk:', JSON.stringify(chunk))
 
-            // Check for errors
-            const error = extractError(chunk)
-            if (error) {
-              console.error('Coze error:', error)
-              lastError = error
+            if (chunk.event === 'error') {
+              console.error('Agent error:', chunk.data.message)
+              lastError = chunk.data.message
             }
 
-            // Extract content from the event
-            const content = extractContent(chunk)
-            if (content) {
-              fullResponse += content
+            if (chunk.event === 'message' && chunk.data?.content?.answer) {
+              fullResponse += chunk.data.content.answer
             }
 
-            // Update session ID if returned
-            const newSessionId = extractSessionId(chunk)
-            if (newSessionId && newSessionId !== cozeSessionId) {
-              cozeSessionId = newSessionId
-              await db.conversation.update({
-                where: { id: conversation!.id },
-                data: { cozeConversationId: newSessionId },
-              })
-            }
-
-            // Send chunk to client
+            // Send chunk to client frontend matching expected shape
             const sseData = `data: ${JSON.stringify(chunk)}\n\n`
             controller.enqueue(encoder.encode(sseData))
           }
@@ -145,25 +131,22 @@ export async function POST(req: NextRequest) {
               },
             })
 
-            // Update conversation timestamp
             await db.conversation.update({
               where: { id: conversation!.id },
               data: { updatedAt: new Date() },
             })
           }
 
-          // Log tool usage with IP info
           await db.auditLog.create({
             data: {
               userId: session.user.id,
               action: 'TOOL_USE',
-              detail: `Used tool: ${tool.name}`,
+              detail: `Used Custom Agent: ${tool.name}`,
               ip: clientInfo.ip,
               userAgent: clientInfo.userAgent,
             },
           })
 
-          // Send completion signal
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
           controller.close()
         } catch (error) {

@@ -20,17 +20,22 @@ async function main() {
 
   console.log('Created admin user:', admin.email)
 
-  // Create default tool using provided bot ID
+  // Create default tool using our custom agent ID
   const tool = await prisma.tool.upsert({
     where: { id: 'default-tool' },
-    update: {},
+    update: {
+      cozeBotId: 'scene-3d-generator',
+      name: '校园场景 3D 底图生成助手',
+      description: '将实拍的校园现场照片转化为写实 3D 渲染风格的底图。',
+      icon: '🏛️',
+    },
     create: {
       id: 'default-tool',
-      name: '校庆活动策划助手',
-      description: 'AI驱动的校庆活动策划方案生成工具',
-      icon: '🎓',
+      name: '校园场景 3D 底图生成助手',
+      description: '将实拍的校园现场照片转化为写实 3D 渲染风格的底图。',
+      icon: '🏛️',
       cozeType: 'BOT',
-      cozeBotId: '7609206709621358628',
+      cozeBotId: 'scene-3d-generator', // Used by AgentRegistry
       isEnabled: true,
       sortOrder: 1,
     },
@@ -40,11 +45,10 @@ async function main() {
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect()
-  })
-  .catch(async (e) => {
+  .catch((e) => {
     console.error(e)
-    await prisma.$disconnect()
     process.exit(1)
+  })
+  .finally(async () => {
+    await prisma.$disconnect()
   })

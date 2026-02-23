@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
-import { uploadToCoze, validateFile } from '@/lib/coze/upload'
+import { uploadToCoze, validateFile } from '@/lib/storage/upload'
 
 export async function POST(req: NextRequest) {
   try {
