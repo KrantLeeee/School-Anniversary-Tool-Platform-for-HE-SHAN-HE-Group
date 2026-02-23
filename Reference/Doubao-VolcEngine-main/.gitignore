@@ -1,9 +1,0 @@
-.venv/
-.venv_broken/
-__pycache__/
-*.pyc
-.DS_Store
-config.ini
-.env
-.vercel/
-.vercelignore
