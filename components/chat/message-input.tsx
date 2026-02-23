@@ -15,14 +15,28 @@ export interface FileAttachment {
 interface MessageInputProps {
   onSend: (message: string, attachments?: FileAttachment[]) => void
   disabled?: boolean
+  initialAttachmentUrl?: string | null
 }
 
-export function MessageInput({ onSend, disabled }: MessageInputProps) {
+export function MessageInput({ onSend, disabled, initialAttachmentUrl }: MessageInputProps) {
   const [message, setMessage] = useState('')
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  useEffect(() => {
+    if (initialAttachmentUrl) {
+      setAttachments([{
+        cozeFileId: 'passed-from-agent',
+        name: 'Agent_Generated_Image.png',
+        type: 'image/png',
+        size: 0,
+        url: initialAttachmentUrl,
+        previewUrl: initialAttachmentUrl
+      }])
+    }
+  }, [initialAttachmentUrl])
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const files = e.target.files

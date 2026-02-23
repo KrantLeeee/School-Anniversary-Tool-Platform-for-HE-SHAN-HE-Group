@@ -42,6 +42,28 @@ async function main() {
   })
 
   console.log('Created default tool:', tool.name)
+
+  const tool2 = await prisma.tool.upsert({
+    where: { id: 'museum-generator-tool' },
+    update: {
+      cozeBotId: 'school-history-museum-generator',
+      name: '校史馆室内设计生成助手',
+      description: '将校园空间底图进行校史馆的展陈空间设计，输出高精度 3D 效果图。',
+      icon: '🏛️',
+    },
+    create: {
+      id: 'museum-generator-tool',
+      name: '校史馆室内设计生成助手',
+      description: '将校园空间底图进行校史馆的展陈空间设计，输出高精度 3D 效果图。',
+      icon: '🏛️',
+      cozeType: 'BOT',
+      cozeBotId: 'school-history-museum-generator',
+      isEnabled: true,
+      sortOrder: 2,
+    },
+  })
+
+  console.log('Created new tool:', tool2.name)
 }
 
 main()

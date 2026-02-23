@@ -17,6 +17,7 @@ interface ChatInterfaceProps {
   tool: Tool
   conversationId?: string
   initialMessages?: Message[]
+  initialAttachmentUrl?: string | null
 }
 
 interface ExtractResult {
@@ -80,6 +81,7 @@ export function ChatInterface({
   tool,
   conversationId: initialConversationId,
   initialMessages = [],
+  initialAttachmentUrl,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(initialMessages)
   const [conversationId, setConversationId] = useState(initialConversationId)
@@ -242,7 +244,11 @@ export function ChatInterface({
       <MessageList messages={messages} isStreaming={isStreaming} />
 
       {/* Floating Input */}
-      <MessageInput onSend={handleSendMessage} disabled={isStreaming} />
+      <MessageInput
+        onSend={handleSendMessage}
+        disabled={isStreaming}
+        initialAttachmentUrl={initialAttachmentUrl}
+      />
     </div>
   )
 }

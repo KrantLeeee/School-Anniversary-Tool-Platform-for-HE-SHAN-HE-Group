@@ -10,7 +10,7 @@ export default async function ToolPage({
   searchParams,
 }: {
   params: Promise<{ toolId: string }>
-  searchParams: Promise<{ conversationId?: string }>
+  searchParams: Promise<{ conversationId?: string; attachmentUrl?: string }>
 }) {
   const session = await auth()
 
@@ -19,7 +19,7 @@ export default async function ToolPage({
   }
 
   const { toolId } = await params
-  const { conversationId } = await searchParams
+  const { conversationId, attachmentUrl } = await searchParams
 
   const tool = await db.tool.findUnique({
     where: { id: toolId },
@@ -59,6 +59,7 @@ export default async function ToolPage({
         tool={tool}
         conversationId={conversationId}
         initialMessages={initialMessages}
+        initialAttachmentUrl={attachmentUrl}
       />
     </div>
   )

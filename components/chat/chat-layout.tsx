@@ -10,12 +10,14 @@ interface ChatLayoutProps {
   tool: Tool
   conversationId?: string
   initialMessages?: Message[]
+  initialAttachmentUrl?: string | null
 }
 
 export function ChatLayout({
   tool,
   conversationId,
   initialMessages = [],
+  initialAttachmentUrl,
 }: ChatLayoutProps) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -83,6 +85,7 @@ export function ChatLayout({
           tool={tool}
           conversationId={conversationId}
           initialMessages={initialMessages}
+          initialAttachmentUrl={initialAttachmentUrl}
         />
       </main>
     </div>

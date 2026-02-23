@@ -6,6 +6,8 @@ import ReactMarkdown from 'react-markdown'
 import { AttachmentDisplay } from './attachment-display'
 import { TypingIndicator } from '@/components/motion'
 import { useSession } from 'next-auth/react'
+import { SendToAgentDialog } from './send-to-agent-dialog'
+import { ImageLightbox } from '@/components/ui/image-lightbox'
 
 interface Message {
   id: string
@@ -55,6 +57,8 @@ function CopyButton({ content }: { content: string }) {
 export function MessageList({ messages, isStreaming }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
+  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [previewImage, setPreviewImage] = useState<{ src: string, alt: string } | null>(null)
 
   const userInitial = session?.user?.name?.[0] || session?.user?.email?.[0] || 'U'
 
@@ -112,7 +116,43 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                 {message.role === 'assistant' ? (
                   <div className="bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 md:p-6 rounded-2xl rounded-tl-none border border-slate-200/50 dark:border-slate-800/50 shadow-sm">
                     <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:text-slate-800 dark:prose-p:text-slate-200 max-w-none prose-headings:font-bold prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-100 dark:prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-slate-800">
-                      <ReactMarkdown>{message.content || '...'}</ReactMarkdown>
+                      <ReactMarkdown
+                        components={{
+                          img: ({ node, ...props }) => (
+                            <span className="relative group inline-block my-4">
+                              <img
+                                {...props}
+                                className="rounded-xl shadow-sm max-w-full cursor-zoom-in hover:opacity-90 transition-opacity"
+                                alt={props.alt || 'Generated Graphic'}
+                                onClick={() => {
+                                  if (props.src) {
+                                    setPreviewImage({ src: props.src, alt: props.alt || 'Image Preview' })
+                                  }
+                                }}
+                              />
+                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    setSelectedImage(props.src || null)
+                                  }}
+                                  className="p-2 bg-white/90 dark:bg-[var(--color-card-dark)]/90 hover:bg-white dark:hover:bg-[var(--color-card-dark)] text-slate-700 dark:text-slate-200 rounded-full shadow-lg backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:scale-110 transition-all flex items-center justify-center group/btn"
+                                  title="去其他助手继续创作"
+                                >
+                                  <svg className="w-5 h-5 text-[var(--color-accent-orange)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                  </svg>
+                                  <span className="absolute right-full mr-2 px-2 py-1 bg-black/80 text-white text-xs rounded opacity-0 group-hover/btn:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
+                                    传给其他助手
+                                  </span>
+                                </button>
+                              </div>
+                            </span>
+                          )
+                        }}
+                      >
+                        {message.content || '...'}
+                      </ReactMarkdown>
                     </div>
                     <div className="mt-4 flex gap-2">
                       {message.content && <CopyButton content={message.content} />}
@@ -145,6 +185,19 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
           )}
         </div>
       </div>
+
+      <SendToAgentDialog
+        isOpen={!!selectedImage}
+        onClose={() => setSelectedImage(null)}
+        imageUrl={selectedImage || ''}
+      />
+
+      <ImageLightbox
+        isOpen={!!previewImage}
+        onClose={() => setPreviewImage(null)}
+        imgSrc={previewImage?.src || ''}
+        imgAlt={previewImage?.alt}
+      />
     </ScrollArea>
   )
 }

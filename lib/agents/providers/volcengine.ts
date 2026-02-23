@@ -17,6 +17,14 @@ export abstract class VolcengineAgent {
     abstract getModelId(): string
 
     /**
+     * Get the OpenAI client instance to use for this agent.
+     * Subclasses can override this to return a custom client (e.g., with a different API key).
+     */
+    protected get client(): OpenAI {
+        return openai
+    }
+
+    /**
      * Helper to format attachments into Volcengine/OpenAI compatible multimodal content blocks.
      */
     protected buildUserMessageContent(message: string, attachments?: AgentChatContext['attachments']) {
@@ -106,7 +114,7 @@ export abstract class VolcengineAgent {
         console.log(`[Volcengine Agent] Starting stream for model: ${this.getModelId()}`)
 
         try {
-            const stream = await openai.chat.completions.create({
+            const stream = await this.client.chat.completions.create({
                 model: this.getModelId(),
                 messages,
                 stream: true,

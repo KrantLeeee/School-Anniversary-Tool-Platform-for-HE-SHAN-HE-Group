@@ -69,6 +69,44 @@ export async function uploadToCoze(file: File): Promise<UploadedFile> {
     }
 }
 
+
 export function isImageType(type: string): boolean {
     return type.startsWith('image/')
 }
+
+/**
+ * Download an image from a URL and upload it to Tencent COS for persistence.
+ * @param imageUrl The temporary URL (e.g., from Volcengine image generation)
+ * @returns The permanent COS public URL
+ */
+export async function uploadUrlToCos(imageUrl: string): Promise<string> {
+    try {
+        const response = await fetch(imageUrl)
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`)
+        }
+
+        const arrayBuffer = await response.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        const contentType = response.headers.get('content-type') || 'image/png'
+
+        const date = new Date()
+        const dateStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
+        const uniqueId = `ai_gen_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
+
+        let ext = 'png'
+        if (contentType === 'image/jpeg') ext = 'jpg'
+        else if (contentType === 'image/webp') ext = 'webp'
+        else if (contentType === 'image/gif') ext = 'gif'
+
+        const key = `ai-generations/${dateStr}/${uniqueId}.${ext}`
+
+        const permanentUrl = await uploadBufferToCOS(key, buffer, contentType)
+        return permanentUrl
+    } catch (error) {
+        console.error('Failed to upload external URL to COS:', error)
+        // If upload fails, just return the original URL as a fallback
+        return imageUrl
+    }
+}
+

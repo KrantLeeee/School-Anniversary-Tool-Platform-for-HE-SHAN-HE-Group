@@ -4,60 +4,59 @@ import { VolcengineAgent } from '../providers/volcengine'
 import { db } from '@/lib/db'
 import { uploadUrlToCos } from '@/lib/storage/upload'
 
-const openai = new OpenAI({
-    apiKey: process.env.ARK_API_KEY || process.env.COZE_API_TOKEN,
+// Creates an isolated client specifically for the school history museum agent 
+// to ensure API usage is tracked separately.
+const museumClient = new OpenAI({
+    apiKey: process.env.ARK_MUSEUM_API_KEY || process.env.ARK_API_KEY || process.env.COZE_API_TOKEN,
     baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
 })
 
-export class Scene3DGeneratorAgent extends VolcengineAgent {
-    // 移除强校验，允许灵活填写任何模型 ID，但第一步仍建议使用如 doubao-vision-pro 的对话视觉模型
+export class SchoolHistoryMuseumGeneratorAgent extends VolcengineAgent {
+    // Override to return our isolated client
+    protected get client(): OpenAI {
+        return museumClient
+    }
+
     getModelId(): string {
-        return process.env.DOUBAO_VISION_MODEL_ID || 'ep-20241223204910-xxxxx'
+        return process.env.DOUBAO_MUSEUM_VISION_MODEL_ID || process.env.DOUBAO_VISION_MODEL_ID || 'ep-20241223204910-xxxxx'
     }
 
     getSystemPrompt(): string {
         return `# 角色定义
-你是一个专业的【校园场景 3D 底图生成助手】，专门将实拍的校园现场照片转化为写实 3D 渲染风格的底图。
+你是一个专业的【校史馆室内设计助手】，专门负责将校园空间底图进行校史馆的展陈空间设计。
 
 # 任务目标
-你的核心任务是对用户上传的图片(也可能是根据你自身之前生成的图)进行二次意图评估，在确立渲染方案后，生成一个干净、写实、有质感的底图。
+你的核心任务是对用户上传或者从上一步传递来的建筑底层图像（尤其是室内长廊、空教室等）进行二次创作，将其改造为充满庄重感、历史感、且具有展示功能的校史馆空间。
 
-# 能力
-你具备以下能力：
-1. **场景及语义分析能力**：能够串联上下文，对用户的进一步修改意见进行分析。如果用户提出修改（比如：移除某个柜子、改颜色等），你要能提取出这些要求。
-2. **生图提示词生成**：能够严格遵循要求，结合图片上下文，输出完整丰富的生图提示词给下游专业图像模型。
+# 设计风格参考
+- **主色调**：以原木色、暗红色、以及暖黄色射灯为主，营造庄重、历史沉淀的感觉。
+- **空间元素**：
+  - 墙面设置木质边框的展示板、历史陈列柜、展墙。
+  - 天花板采用黑色格栅配合暖色筒灯或射灯照明。
+  - 地面采用木纹地板或深色地砖。
+  - 中央可以布置玻璃展柜，用于陈列历史卷轴、奖杯等。
 
 # 工作流程与输出格式约束 (极度重要)
 你必须在回复中包含两部分：
-1. **给用户的改建说明**：说明你会做哪些核心改变（如：替换材质、移除黑板、增强自然光影等）。
-2. **生图提示词**：用 <image_prompt> 标签包裹你为下游大模型生成的提示词。（限制在中文300字内，详细描述画面元素，光影，渲染风格等。务必结合连贯场景）。
+1. **给用户的设计构思说明**：分析如何将当前的结构改造成校史馆（你会设计哪些展墙，在什么位置放置展柜，用什么材质等）。
+2. **生图提示词**：用 <image_prompt> 标签包裹你为下游大模型生成的提示词。（限制在中文300字内，详细描述画面元素，光影，渲染风格等。务必结合连贯场景，绝不能超出当前物理长宽比例）。
 
 ## 处理原则（必须遵循）
 ### 核心约束
-- **严格保持布局**：严禁改变原场景的建筑布局、空间结构、只能调整渲染风格局部内容。
-
-### 室外场景生图建议
-1. 建筑使用大块干净的几何形体或红砖架构，去除临时杂物和横幅。周围点缀写实的 3D 绿植。
-2. 写实 3D 渲染风格，湛蓝通透的天空，柔和明亮的太阳光，"oc渲染，全局光照明亮，充满高级感，电影级质感"
-
-### 室内场景生图建议
-1. 极简大块干净几何形体，按用户需求移除或保留特定的家具物体。
-2. 明亮干净的室内全局光照，保留真实材质纹理。
+- **严格保持布局**：严禁改变原场景的建筑主框架、承重柱、天花板高度等，仅做表皮装饰面和内部家具展柜的改造。
 
 # 示例输出格式：
-好的！我将根据您的要求，把墙上的绿色黑板和下方柜子都移除掉，让墙面保持空旷写实。
+好的！我将把这个空间改造成一个充满历史底蕴的荣誉展厅。我们将在右侧设置荣誉墙，并使用深木色材质覆盖墙面。
 
 <image_prompt>
-室内教室空间，写实 3D 渲染风格。极简干净大块面几何形体会，墙面整体涂白且十分空旷。原本的黑板和下方柜子已经被完全移除。明亮干净的室内全局光照，自然阳光从窗户外透入。真实高级材质纹理，oc渲染，摄影机视角不变，超分辨，电影级质感。
+校史馆室内设计，写实 3D 渲染。整体采用深木色和暗红色的庄重色调。墙面设计了陈列展览柜，里面打着暖黄色射灯展示着荣誉奖杯和老照片。天花板为黑色格栅，地面是木质地板。空间内布置有独立的玻璃陈列柜。整体氛围庄重、历史感厚重，oc渲染，环境光遮蔽高级，电影级质感。
 </image_prompt>
 `
     }
 
-    // Override the base streamChat to inject the image generation step
     async *streamChat(context: AgentChatContext): AsyncGenerator<AgentStreamEvent> {
         const { message, conversationId, attachments } = context
 
-        // Function to yield text immediately
         const yieldText = async function* (text: string) {
             yield {
                 event: 'message',
@@ -67,13 +66,11 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
 
         let referenceImageUrl = ''
 
-        // 1. Find if the user attached a new image
         if (attachments && attachments.length > 0) {
             const img = attachments.find(a => !!a.url && a.type.startsWith('image/'))
             if (img && img.url) referenceImageUrl = img.url
         }
 
-        // 2. If no new attachment, search DB history for the latest image (either user uploaded, or assistant generated)
         if (!referenceImageUrl && conversationId) {
             const history = await db.message.findMany({
                 where: { conversationId },
@@ -81,7 +78,6 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
             })
 
             for (const msg of history) {
-                // If assistant previously generated an image markdown
                 if (msg.role === 'assistant' && msg.content) {
                     const match = msg.content.match(/!\[.*?\]\((https?:\/\/.*?)\)/)
                     if (match && match[1]) {
@@ -89,12 +85,11 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
                         break
                     }
                 }
-                // If user previously uploaded an image
                 if (msg.role === 'user' && msg.attachments) {
                     try {
                         const atts = JSON.parse(msg.attachments)
                         const img = atts.find((a: any) => !!a.url && a.type.startsWith('image/'))
-                        if (img) {
+                        if (img && img.url) {
                             referenceImageUrl = img.url
                             break
                         }
@@ -104,21 +99,19 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
         }
 
         if (!referenceImageUrl) {
-            // Cannot find any image at all in current inputs or history
-            yield* yieldText('你好呀😊 我好像没有收到任何参考图片。请先上传一张校园现场照片，或者基于之前的图片发起对话~')
+            yield* yieldText('欢迎来到校史馆设计工具！请先上传一张空间底图，让我为您构思展陈方案~')
             yield { event: 'done', data: {} }
             return
         }
 
-        yield* yieldText('🔍 *正在分析场景与您的沟通需求，构思 3D 渲染方案...*\n\n')
+        yield* yieldText('🏛️ *正在构思如何将该空间改造为校史馆展陈区...*\n\n')
 
         let aiFullReply = ''
 
         try {
-            // Build the multi-message history so Vision model understands what we did before
             const visionMessages = await this.buildMessagesHistory(context)
 
-            const visionStream = await openai.chat.completions.create({
+            const visionStream = await this.client.chat.completions.create({
                 model: this.getModelId(),
                 messages: visionMessages,
                 stream: true,
@@ -149,54 +142,52 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
                 }
             }
 
-            // Extract the prompt using regex
             const match = aiFullReply.match(/<image_prompt>([\s\S]*?)<\/image_prompt>/)
             if (match && match[1]) {
                 imagePrompt = match[1].trim()
             } else if (aiFullReply.includes('<image_prompt>')) {
-                // In case closing tag was missing or cut off
                 imagePrompt = aiFullReply.split('<image_prompt>')[1].replace('</image_prompt>', '').trim()
             }
 
             if (!imagePrompt) {
-                yield* yieldText('\n\n⚠️ 抱歉，目前的模型未能成功生成底层的渲染提示词，生图步骤被跳过。')
+                yield* yieldText('\n\n⚠️ 抱歉，未能成功生成展厅设计的底层逻辑，渲染步骤被跳过。')
                 yield { event: 'done', data: {} }
                 return
             }
 
-            yield* yieldText('\n\n🎨 *底层提示词构建完成！正在进行高精度 3D 渲染，请稍候约10-15秒...*\n\n')
+            yield* yieldText('\n\n✨ *设计方案敲定！正在为您生成精美的校史馆效果图，请稍候约10秒...*\n\n')
 
             const imageGenBody: any = {
-                model: process.env.DOUBAO_IMAGE_MODEL_ID || "doubao-seedream-4-5-251128",
+                model: process.env.DOUBAO_MUSEUM_IMAGE_MODEL_ID || process.env.DOUBAO_IMAGE_MODEL_ID || "doubao-seedream-4-5-251128",
                 prompt: imagePrompt,
                 size: "2K",
                 response_format: "url",
-                image_weight: 0.6,
+                image_weight: 0.5, // 稍微降低权重给模型更多设计空间，毕竟要改造家具展陈
                 watermark: false,
-                image: referenceImageUrl // Pass the extracted reference image
+                image: referenceImageUrl
             }
 
-            const imageResponse = await openai.images.generate(imageGenBody)
+            // Also explicitly use the museum client here
+            const imageResponse = await this.client.images.generate(imageGenBody)
 
             if (imageResponse.data && imageResponse.data.length > 0 && imageResponse.data[0].url) {
                 const generatedImageUrl = imageResponse.data[0].url
                 const permanentUrl = await uploadUrlToCos(generatedImageUrl)
-                yield* yieldText(`![图纸](${permanentUrl})\n\n✨ 渲染完成！这是基于您照片生成的干净 3D 底图，随时可以用来作为设计排版的背景。`)
+                yield* yieldText(`![图纸](${permanentUrl})\n\n🖼️ 锵锵！属于你们的校史馆空间布置完成了。针对这版设计，您还有需要调整细节的地方吗？`)
             } else {
                 throw new Error("模型未返回有效图片链接")
             }
 
         } catch (error: any) {
-            console.error('[Scene3DGeneratorAgent] Error:', error)
+            console.error('[SchoolHistoryMuseumGeneratorAgent] Error:', error)
             yield {
                 event: 'error',
                 data: {
-                    message: error.message || '图片生成失败，请稍后重试。'
+                    message: error.message || '设计生成失败，请稍后重试。'
                 }
             }
         }
 
-        // Final DONE event 
         yield {
             event: 'done',
             data: {}
