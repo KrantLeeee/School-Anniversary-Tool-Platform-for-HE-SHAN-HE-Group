@@ -48,12 +48,10 @@ export abstract class VolcengineAgent {
     }
 
     /**
-     * Main chat streaming function implementing the Agent interface
+     * Helper to fetch and build OpenAI-compatible message history
      */
-    async *streamChat(context: AgentChatContext): AsyncGenerator<AgentStreamEvent> {
+    protected async buildMessagesHistory(context: AgentChatContext): Promise<any[]> {
         const { message, conversationId, attachments } = context
-
-        // 1. Fetch conversation history if a conversationId is provided
         let messages: any[] = []
 
         // Add system prompt first
@@ -63,25 +61,13 @@ export abstract class VolcengineAgent {
         })
 
         if (conversationId) {
-            // Fetch previous messages ordered by ascending creation time
-            // Exclude the currently processing message (if it was already inserted by the route)
             const history = await db.message.findMany({
                 where: { conversationId },
                 orderBy: { createdAt: 'asc' },
-                // To avoid duplicating the current user message, we'll rely on the DB already having it,
-                // or we fetch history from *before* this exact request. For simplicity, we assume
-                // the route hasn't saved this exact user turn yet, OR we ignore the last if needed.
-                // Actually, the route.ts currently saves the user message *before* streaming.
-                // So `history` already contains the current user message!
-                // Wait, if it already contains the user message with attachments JSON, we parse it.
             })
 
-            // Map history to OpenAI format
             for (let i = 0; i < history.length; i++) {
                 const msg = history[i]
-
-                // If this is the newly created message (last one and role is user), we might want to handle it directly
-                // But for safety, we simply reconstruct all of them.
                 let parsedContent: any = msg.content || ' '
 
                 if (msg.role === 'user' && msg.attachments) {
@@ -98,17 +84,24 @@ export abstract class VolcengineAgent {
                     content: parsedContent
                 })
             }
-
-            // If the current message wasn't saved in DB yet by the caller, we'd add it here.
-            // But typically route.ts does `db.message.create({role: 'user', ...})` THEN calls `streamChat`.
-            // So the history `messages` array already includes the latest prompt!
         } else {
-            // No conversation history provided; just use the current message
             messages.push({
                 role: 'user',
                 content: this.buildUserMessageContent(message, attachments)
             })
         }
+
+        return messages
+    }
+
+    /**
+     * Main chat streaming function implementing the Agent interface
+     */
+    async *streamChat(context: AgentChatContext): AsyncGenerator<AgentStreamEvent> {
+        const { conversationId } = context
+
+        // 1. Fetch conversation history
+        const messages = await this.buildMessagesHistory(context)
 
         console.log(`[Volcengine Agent] Starting stream for model: ${this.getModelId()}`)
 
