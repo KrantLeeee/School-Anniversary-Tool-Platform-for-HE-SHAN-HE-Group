@@ -125,7 +125,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                                 className="rounded-xl shadow-sm max-w-full cursor-zoom-in hover:opacity-90 transition-opacity"
                                 alt={props.alt || 'Generated Graphic'}
                                 onClick={() => {
-                                  if (props.src) {
+                                  if (props.src && typeof props.src === 'string') {
                                     setPreviewImage({ src: props.src, alt: props.alt || 'Image Preview' })
                                   }
                                 }}
@@ -134,7 +134,9 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation()
-                                    setSelectedImage(props.src || null)
+                                    if (typeof props.src === 'string') {
+                                      setSelectedImage(props.src)
+                                    }
                                   }}
                                   className="p-2 bg-white/90 dark:bg-[var(--color-card-dark)]/90 hover:bg-white dark:hover:bg-[var(--color-card-dark)] text-slate-700 dark:text-slate-200 rounded-full shadow-lg backdrop-blur-sm border border-slate-200/50 dark:border-slate-700/50 hover:scale-110 transition-all flex items-center justify-center group/btn"
                                   title="去其他助手继续创作"
