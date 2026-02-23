@@ -50,3 +50,6 @@ uploads/
 
 # Reference materials
 Reference/
+
+# Documentation large files
+docs/*.pdf
