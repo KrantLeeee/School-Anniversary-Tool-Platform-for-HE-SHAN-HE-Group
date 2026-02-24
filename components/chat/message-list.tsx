@@ -9,6 +9,8 @@ import { useSession } from 'next-auth/react'
 import { SendToAgentDialog } from './send-to-agent-dialog'
 import { ImageLightbox } from '@/components/ui/image-lightbox'
 
+import type { Tool } from '@prisma/client'
+
 interface Message {
   id: string
   role: 'user' | 'assistant'
@@ -20,6 +22,8 @@ interface Message {
 interface MessageListProps {
   messages: Message[]
   isStreaming: boolean
+  tool: Tool
+  onSendMessage: (message: string) => void
 }
 
 function CopyButton({ content }: { content: string }) {
@@ -54,13 +58,17 @@ function CopyButton({ content }: { content: string }) {
   )
 }
 
-export function MessageList({ messages, isStreaming }: MessageListProps) {
+import { getAgentSuggestions } from '@/config/agent-suggestions'
+
+export function MessageList({ messages, isStreaming, tool, onSendMessage }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [previewImage, setPreviewImage] = useState<{ src: string, alt: string } | null>(null)
 
   const userInitial = session?.user?.name?.[0] || session?.user?.email?.[0] || 'U'
+
+  const suggestions = getAgentSuggestions(tool.id)
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -73,19 +81,36 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center pt-20 pb-40 px-4">
-        <div className="text-center animate-fade-up max-w-sm">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-3xl bg-[var(--color-accent-orange)]/10 dark:bg-[var(--color-accent-orange)]/5 mb-6 shadow-sm">
-            <svg className="w-8 h-8 text-[var(--color-accent-orange)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+      <div className="flex flex-1 flex-col items-center justify-center pt-10 pb-40 px-4 max-w-4xl mx-auto w-full">
+        <div className="w-full space-y-12 animate-fade-up">
+          {/* Agent Header */}
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-[2rem] bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 text-4xl mb-2 hover:scale-110 transition-transform duration-500">
+              {tool.icon || '🤖'}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              {tool.name}
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 text-base md:text-lg font-light max-w-2xl mx-auto leading-relaxed">
+              {tool.description}
+            </p>
           </div>
-          <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white mb-2">
-            早上好{session?.user?.name ? `, ${session.user.name}` : ''}
-          </h3>
-          <p className="text-slate-500 dark:text-slate-400 text-sm md:text-base font-light">
-            我已准备好帮您生成新的内容或优化现有的创意方案。
-          </p>
+
+          {/* Sample Prompts */}
+          <div className="space-y-6">
+            <h4 className="text-sm font-bold text-slate-400 dark:text-slate-600 uppercase tracking-widest text-center">你可以这样问我</h4>
+            <div className="flex flex-wrap justify-center gap-3">
+              {suggestions.map((suggestion, i) => (
+                <button
+                  key={i}
+                  onClick={() => onSendMessage(suggestion)}
+                  className="px-6 py-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-sm md:text-base font-medium text-slate-700 dark:text-slate-300 hover:border-[var(--color-accent-orange)] hover:text-[var(--color-accent-orange)] transition-all duration-300 hover:shadow-xl active:scale-95 text-left max-w-md shadow-sm"
+                >
+                  {suggestion}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     )

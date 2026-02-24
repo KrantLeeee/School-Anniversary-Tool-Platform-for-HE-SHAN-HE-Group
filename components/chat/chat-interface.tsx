@@ -241,7 +241,12 @@ export function ChatInterface({
   return (
     <div className="flex flex-1 flex-col overflow-hidden relative w-full">
       {/* Messages */}
-      <MessageList messages={messages} isStreaming={isStreaming} />
+      <MessageList
+        messages={messages}
+        isStreaming={isStreaming}
+        tool={tool}
+        onSendMessage={handleSendMessage}
+      />
 
       {/* Floating Input */}
       <MessageInput
