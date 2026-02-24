@@ -93,7 +93,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
 
   return (
     <ScrollArea className="flex-1 w-full" ref={scrollRef}>
-      <div className="px-4 md:px-20 pt-20 pb-40">
+      <div className="px-4 md:px-20 pt-20 pb-[280px]">
         <div className="max-w-3xl mx-auto space-y-8">
           {messages.map((message, index) => (
             <div
@@ -112,7 +112,11 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                 </div>
               )}
 
-              <div className="flex-1 flex flex-col space-y-4 max-w-[85%]">
+              <div className={`flex-1 flex flex-col max-w-[85%] ${message.role === 'user' ? 'space-y-2' : 'space-y-4'}`}>
+                {message.role === 'user' && (
+                  <AttachmentDisplay attachments={message.attachments} mode="images" />
+                )}
+
                 {message.role === 'assistant' ? (
                   <div className="bg-white/50 dark:bg-white/5 backdrop-blur-sm p-5 md:p-6 rounded-2xl rounded-tl-none border border-slate-200/50 dark:border-slate-800/50 shadow-sm">
                     <div className="prose prose-sm md:prose-base dark:prose-invert prose-p:text-slate-800 dark:prose-p:text-slate-200 max-w-none prose-headings:font-bold prose-code:bg-slate-100 dark:prose-code:bg-slate-800 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-pre:bg-slate-100 dark:prose-pre:bg-slate-900 prose-pre:border prose-pre:border-slate-200 dark:prose-pre:border-slate-800">
@@ -130,7 +134,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                                   }
                                 }}
                               />
-                              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+                              <span className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation()
@@ -148,7 +152,7 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                                     传给其他助手
                                   </span>
                                 </button>
-                              </div>
+                              </span>
                             </span>
                           )
                         }}
@@ -161,12 +165,25 @@ export function MessageList({ messages, isStreaming }: MessageListProps) {
                     </div>
                   </div>
                 ) : (
-                  <div className="bg-white dark:bg-[var(--color-card-dark)]/80 p-4 md:p-5 text-sm md:text-base rounded-2xl rounded-tr-none shadow-sm border border-slate-200 dark:border-slate-800">
-                    {message.content && (
-                      <p className="whitespace-pre-wrap text-slate-800 dark:text-slate-200 leading-relaxed">{message.content}</p>
-                    )}
-                    <AttachmentDisplay attachments={message.attachments} />
-                  </div>
+                  (() => {
+                    const hasText = message.content && message.content.trim().length > 0
+                    let hasFiles = false
+                    try {
+                      const parsed = message.attachments ? JSON.parse(message.attachments) : []
+                      hasFiles = Array.isArray(parsed) && parsed.some((a: any) => !a.type?.startsWith('image/'))
+                    } catch { }
+
+                    if (!hasText && !hasFiles) return null
+
+                    return (
+                      <div className="bg-white dark:bg-[var(--color-card-dark)]/80 p-4 md:p-5 text-sm md:text-base rounded-2xl rounded-tr-none shadow-sm border border-slate-200 dark:border-slate-800 ml-auto">
+                        {hasText && (
+                          <p className="whitespace-pre-wrap text-slate-800 dark:text-slate-200 leading-relaxed">{message.content}</p>
+                        )}
+                        <AttachmentDisplay attachments={message.attachments} mode="files" />
+                      </div>
+                    )
+                  })()
                 )}
               </div>
             </div>

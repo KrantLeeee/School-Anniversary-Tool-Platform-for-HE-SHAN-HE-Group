@@ -13,6 +13,7 @@ interface AttachmentData {
 
 interface AttachmentDisplayProps {
   attachments: string | null | undefined
+  mode?: 'all' | 'images' | 'files'
 }
 
 function formatFileSize(bytes: number): string {
@@ -32,7 +33,7 @@ function getFileIcon(type: string): string {
   return '📁'
 }
 
-export function AttachmentDisplay({ attachments }: AttachmentDisplayProps) {
+export function AttachmentDisplay({ attachments, mode = 'all' }: AttachmentDisplayProps) {
   const [previewImage, setPreviewImage] = useState<{ src: string, alt: string } | null>(null)
 
   if (!attachments) return null
@@ -46,36 +47,55 @@ export function AttachmentDisplay({ attachments }: AttachmentDisplayProps) {
 
   if (!Array.isArray(parsed) || parsed.length === 0) return null
 
+  const images = parsed.filter(a => isImage(a.type))
+  const files = parsed.filter(a => !isImage(a.type))
+
+  const showImages = (mode === 'all' || mode === 'images') && images.length > 0
+  const showFiles = (mode === 'all' || mode === 'files') && files.length > 0
+
   return (
     <>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {parsed.map((attachment, index) => {
-          const isImg = isImage(attachment.type)
-          return (
-            <div
-              key={attachment.cozeFileId || index}
-              onClick={() => {
-                if (isImg && attachment.url) {
-                  setPreviewImage({ src: attachment.url, alt: attachment.name })
-                }
-              }}
-              className={`flex items-center gap-2 rounded-lg bg-white/20 backdrop-blur-sm px-3 py-1.5 text-xs border border-white/20 ${isImg && attachment.url ? 'cursor-zoom-in hover:bg-white/30 transition-colors' : ''}`}
-            >
-              <span className="text-base">{getFileIcon(attachment.type)}</span>
-              <span className="max-w-[120px] truncate font-medium">{attachment.name}</span>
-              {attachment.size && (
-                <span className="opacity-70">
-                  {formatFileSize(attachment.size)}
-                </span>
-              )}
-              {/* Minimal thumbnail preview for images if URL exists */}
-              {isImg && attachment.url && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={attachment.url} alt="thumbnail" className="w-4 h-4 rounded object-cover ml-1 opacity-80" />
-              )}
-            </div>
-          )
-        })}
+      <div className={`${showImages && showFiles ? 'space-y-3' : ''} ${mode === 'images' ? 'mb-2' : ''}`}>
+        {/* Image Grid Layout */}
+        {showImages && (
+          <div className="flex flex-wrap gap-2 justify-end">
+            {images.map((attachment, index) => (
+              <div
+                key={attachment.cozeFileId || index}
+                onClick={() => attachment.url && setPreviewImage({ src: attachment.url, alt: attachment.name })}
+                className="group relative w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-white/50 dark:border-slate-800/50 shadow-md cursor-zoom-in hover:scale-[1.02] transition-all"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={attachment.url}
+                  alt={attachment.name}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* File Pill Layout */}
+        {showFiles && (
+          <div className="flex flex-wrap gap-2 justify-end">
+            {files.map((attachment, index) => (
+              <div
+                key={attachment.cozeFileId || index}
+                className="flex items-center gap-2 rounded-xl bg-white/20 backdrop-blur-sm px-3 py-2 text-xs border border-white/20 whitespace-nowrap"
+              >
+                <span className="text-base">{getFileIcon(attachment.type)}</span>
+                <span className="max-w-[120px] truncate font-medium">{attachment.name}</span>
+                {attachment.size && (
+                  <span className="opacity-70">
+                    {formatFileSize(attachment.size)}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <ImageLightbox

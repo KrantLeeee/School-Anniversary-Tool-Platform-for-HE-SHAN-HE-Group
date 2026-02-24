@@ -4,12 +4,18 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useConversations, ConversationSummary } from '@/hooks/use-conversations'
+import { ConversationSummary } from '@/hooks/use-conversations'
 
 interface ConversationSidebarProps {
   toolId: string
   currentConversationId?: string
   onNewChat: () => void
+  conversationState: {
+    conversations: ConversationSummary[]
+    isLoading: boolean
+    deleteConversation: (id: string) => Promise<void>
+    refresh: () => Promise<void>
+  }
 }
 
 function groupConversationsByDate(conversations: ConversationSummary[]) {
@@ -47,11 +53,11 @@ export function ConversationSidebar({
   toolId,
   currentConversationId,
   onNewChat,
+  conversationState,
 }: ConversationSidebarProps) {
   const router = useRouter()
   const { data: session } = useSession()
-  const { conversations, isLoading, deleteConversation, refresh } =
-    useConversations(toolId)
+  const { conversations, isLoading, deleteConversation } = conversationState
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const groups = groupConversationsByDate(conversations)

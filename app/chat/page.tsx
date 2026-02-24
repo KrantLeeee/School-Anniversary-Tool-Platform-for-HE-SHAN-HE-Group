@@ -52,10 +52,16 @@ export default async function ChatPage({
     }
   }
 
+  const allTools = await db.tool.findMany({
+    where: { isEnabled: true },
+    orderBy: { sortOrder: 'asc' },
+  })
+
   return (
-    <div className="flex h-screen overflow-hidden bg-[var(--color-background-light)] dark:bg-[var(--color-background-dark)] text-slate-800 dark:text-slate-100 transition-colors duration-200">
+    <div className="flex h-screen overflow-hidden bg-[var(--color-background-light)] dark:bg-[var(--color-background-dark)] text-slate-800 dark:text-slate-100 transition-colors duration-200 pt-[73px]">
       <ChatLayout
         tool={tool}
+        allTools={allTools}
         conversationId={params.conversationId}
         initialMessages={initialMessages}
       />
