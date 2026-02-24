@@ -37,7 +37,7 @@ export function Header() {
           <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[var(--color-accent-orange)] to-[var(--color-accent-pink)] flex items-center justify-center text-white font-bold text-xs shadow-sm">
             AI
           </div>
-          <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">创意工坊</span>
+          <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white">禾山禾 AI 工具平台</span>
         </Link>
 
         {/* Desktop Navigation Links */}

@@ -215,14 +215,15 @@ export function MessageList({ messages, isStreaming, tool, onSendMessage }: Mess
           ))}
 
           {/* Typing indicator */}
-          {isStreaming && messages[messages.length - 1]?.content === '' && (
+          {isStreaming && (messages[messages.length - 1]?.role === 'user' || !messages[messages.length - 1]?.content) && (
             <div className="flex gap-4 md:gap-6 animate-fade-up">
               <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-[var(--color-accent-orange)] to-[var(--color-accent-pink)] flex-shrink-0 flex items-center justify-center text-white font-bold text-sm shadow-sm">
                 AI
               </div>
               <div className="flex-1 max-w-[85%]">
-                <div className="bg-white/50 dark:bg-white/5 backdrop-blur-sm px-5 py-4 rounded-2xl rounded-tl-none border border-slate-200/50 dark:border-slate-800/50 shadow-sm inline-block">
+                <div className="bg-white/50 dark:bg-white/5 backdrop-blur-sm px-5 py-3 rounded-2xl rounded-tl-none border border-slate-200/50 dark:border-slate-800/50 shadow-sm inline-flex items-center gap-3">
                   <TypingIndicator />
+                  <span className="text-xs font-medium text-slate-400 dark:text-slate-500 animate-pulse">AI 正在思考中...</span>
                 </div>
               </div>
             </div>

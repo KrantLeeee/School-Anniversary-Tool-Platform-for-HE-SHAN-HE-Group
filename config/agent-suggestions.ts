@@ -32,6 +32,14 @@ export const AGENT_CONFIG_MAP: Record<string, AgentConfig> = {
             '预判一下该校今年校庆可能的重点项目方向',
             '帮我写一份该校杰出校友的背景调研提纲'
         ]
+    },
+    // 校庆策划设计案全案生成助手
+    'anniversary-planner-tool': {
+        suggestions: [
+            '帮我策划一个60周年校庆全案的基础骨架',
+            '如何针对职业院校设计富有“工匠精神”的校庆氛围？',
+            '我想策划一个校庆庆典仪式，包含哪些核心环节？'
+        ]
     }
 };
 

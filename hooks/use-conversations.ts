@@ -90,5 +90,6 @@ export function useConversations(toolId?: string): UseConversationsResult {
     error,
     refresh: fetchConversations,
     deleteConversation,
+    renameConversation,
   }
 }

@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: '校庆策划工具平台',
-  description: 'AI驱动的校庆活动策划工具箱',
+  title: '禾山禾 AI 工具平台',
+  description: 'AI 驱动的校庆活动策划工具箱',
 }
 
 export default function RootLayout({

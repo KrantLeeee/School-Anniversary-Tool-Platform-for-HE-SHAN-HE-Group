@@ -86,6 +86,28 @@ async function main() {
   })
 
   console.log('Created new tool:', tool3.name)
+
+  const tool4 = await prisma.tool.upsert({
+    where: { id: 'anniversary-planner-tool' },
+    update: {
+      cozeBotId: 'school-anniversary-planner',
+      name: '校庆策划设计案全案生成助手',
+      description: '基于学校特色生成定制化、可落地的校庆策划设计全案。',
+      icon: '📝',
+    },
+    create: {
+      id: 'anniversary-planner-tool',
+      name: '校庆策划设计案全案生成助手',
+      description: '基于学校特色生成定制化、可落地的校庆策划设计全案。',
+      icon: '📝',
+      cozeType: 'BOT',
+      cozeBotId: 'school-anniversary-planner',
+      isEnabled: true,
+      sortOrder: 4,
+    },
+  })
+
+  console.log('Created new tool:', tool4.name)
 }
 
 main()

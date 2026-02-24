@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { ConversationSidebar } from './conversation-sidebar'
 import { ChatInterface, Message } from './chat-interface'
@@ -14,6 +14,8 @@ interface ChatLayoutProps {
   conversationId?: string
   initialMessages?: Message[]
   initialAttachmentUrl?: string | null
+  isCollapsed?: boolean
+  onToggleCollapse?: () => void
 }
 
 export function ChatLayout({
@@ -25,12 +27,50 @@ export function ChatLayout({
 }: ChatLayoutProps) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isCollapsed, setIsCollapsed] = useState(false)
   const [toolMenuOpen, setToolMenuOpen] = useState(false)
   const [actionMenuOpen, setActionMenuOpen] = useState(false)
   const [renameDialogOpen, setRenameDialogOpen] = useState(false)
+  const [sidebarWidth, setSidebarWidth] = useState(260)
+  const [isResizing, setIsResizing] = useState(false)
 
   // Lift conversation state
   const conversationState = useConversations(tool.id)
+  const isResizingRef = useRef(false)
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    isResizingRef.current = true
+    setIsResizing(true)
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', stopResizing)
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }, [])
+
+  const stopResizing = useCallback(() => {
+    isResizingRef.current = false
+    setIsResizing(false)
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', stopResizing)
+    document.body.style.cursor = 'default'
+    document.body.style.userSelect = 'auto'
+  }, [])
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isResizingRef.current) return
+    const newWidth = e.clientX
+    if (newWidth >= 180 && newWidth <= 480) {
+      setSidebarWidth(newWidth)
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', stopResizing)
+    }
+  }, [handleMouseMove, stopResizing])
 
   const handleNewChat = useCallback(() => {
     router.push(`/chat?toolId=${tool.id}`)
@@ -57,6 +97,10 @@ export function ChatLayout({
     setActionMenuOpen(false)
   }
 
+  const toggleCollapse = useCallback(() => {
+    setIsCollapsed(prev => !prev)
+  }, [])
+
   const handleRename = async (newTitle: string) => {
     if (!conversationId) return
     await conversationState.renameConversation(conversationId, newTitle)
@@ -69,16 +113,43 @@ export function ChatLayout({
     <div className="flex flex-1 overflow-hidden w-full h-full">
       {/* Sidebar for desktop and mobile */}
       <aside
+        style={{ width: isCollapsed ? 0 : sidebarWidth }}
         className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } fixed inset-y-0 left-0 z-40 w-64 md:flex-shrink-0 bg-white/50 dark:bg-[var(--color-card-dark)]/50 border-r border-slate-200 dark:border-slate-800 flex flex-col backdrop-blur-sm transform transition-transform duration-300 md:relative md:translate-x-0 overflow-hidden`}
+          } fixed inset-y-0 left-0 z-40 md:flex-shrink-0 bg-white/50 dark:bg-[var(--color-card-dark)]/50 border-r border-slate-200 dark:border-slate-800 flex flex-col backdrop-blur-sm transform transition-all duration-300 md:relative md:translate-x-0 overflow-visible ${isCollapsed ? 'md:hidden' : ''}`}
       >
         <ConversationSidebar
           toolId={tool.id}
           currentConversationId={conversationId}
           onNewChat={handleNewChat}
           conversationState={conversationState}
+          isCollapsed={isCollapsed}
+          onToggleCollapse={toggleCollapse}
         />
+
+        {/* Resize Handle */}
+        {!isCollapsed && (
+          <div
+            onMouseDown={startResizing}
+            className={`hidden md:block absolute top-0 -right-1 w-2 h-full cursor-col-resize z-50 group hover:bg-[var(--color-accent-orange)]/20 transition-colors ${isResizing ? 'bg-[var(--color-accent-orange)]/30' : ''}`}
+          >
+            <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-8 rounded-full bg-slate-300 dark:bg-slate-700 group-hover:bg-[var(--color-accent-orange)] transition-colors ${isResizing ? 'scale-y-150' : ''}`} />
+          </div>
+        )}
       </aside>
+
+      {/* Collapse Re-open Button (Desktop only, when collapsed) */}
+      {isCollapsed && (
+        <button
+          onClick={toggleCollapse}
+          className="hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 w-6 h-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-r-lg shadow-sm items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-all z-40 group"
+          title="展开侧边栏"
+        >
+          <svg className="w-4 h-4 text-slate-400 group-hover:text-[var(--color-accent-orange)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M9 3v18" />
+          </svg>
+        </button>
+      )}
 
       {/* Overlay for mobile sidebar */}
       <div
@@ -169,7 +240,7 @@ export function ChatLayout({
         </header>
 
         <ChatInterface
-          key={conversationId || 'new'}
+          key={`${tool.id}-${conversationId || 'new'}`}
           tool={tool}
           conversationId={conversationId}
           initialMessages={initialMessages}
