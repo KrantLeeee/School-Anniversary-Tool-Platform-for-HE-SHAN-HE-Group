@@ -57,8 +57,15 @@ export async function POST(req: NextRequest) {
 
     // Get or create conversation in our DB
     let conversation = conversationId
-      ? await db.conversation.findUnique({ where: { id: conversationId } })
+      ? await db.conversation.findUnique({
+        where: { id: conversationId },
+      })
       : null
+
+    // Robustness: Verify conversation ownership
+    if (conversation && conversation.userId !== session.user.id) {
+      return new Response('Forbidden', { status: 403 })
+    }
 
     let cozeConversationId = conversation?.cozeConversationId || undefined
 

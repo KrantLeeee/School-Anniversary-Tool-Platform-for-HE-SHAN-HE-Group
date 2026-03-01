@@ -27,20 +27,12 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: 'Plus Jakarta Sans';
-  src: url('https://fonts.gstatic.com/s/plusjakartasans/v8/LDIbaomQNQcsA88c7O9yZ4KMCoOg4IA6-91aHEjcWuA_KU7NShXUEKi4Rw.woff2') format('woff2');
-  font-weight: 200 800;
-  font-style: normal;
-  font-display: swap;
-}
-
 /* ========================================
    Theme Variables
    ======================================== */
 @theme inline {
   /* Font families */
-  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-sans: var(--font-jakarta-sans), system-ui, sans-serif;
   --font-serif: 'Instrument Serif', Georgia, serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
 
@@ -306,7 +298,13 @@
    Typography
    ======================================== */
 @layer base {
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-semibold tracking-tight;
   }
 
@@ -324,8 +322,13 @@
    Animation Keyframes
    ======================================== */
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes fade-up {
@@ -333,6 +336,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -344,6 +348,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -355,6 +360,7 @@
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -366,6 +372,7 @@
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -377,6 +384,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -384,33 +392,71 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @keyframes bounce-subtle {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-5px);
+  }
 }
 
 @keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes ripple {
@@ -421,19 +467,33 @@
 }
 
 @keyframes typewriter {
-  from { width: 0; }
-  to { width: 100%; }
+  from {
+    width: 0;
+  }
+
+  to {
+    width: 100%;
+  }
 }
 
 @keyframes blink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
+
+  0%,
+  50% {
+    opacity: 1;
+  }
+
+  51%,
+  100% {
+    opacity: 0;
+  }
 }
 
 /* ========================================
    Animation Utilities
    ======================================== */
 @layer utilities {
+
   /* Fade animations */
   .animate-fade-in {
     animation: fade-in 0.5s ease-out forwards;
@@ -471,12 +531,10 @@
   }
 
   .animate-shimmer {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      oklch(0.95 0.01 85 / 0.5) 50%,
-      transparent 100%
-    );
+    background: linear-gradient(90deg,
+        transparent 0%,
+        oklch(0.95 0.01 85 / 0.5) 50%,
+        transparent 100%);
     background-size: 200% 100%;
     animation: shimmer 2s infinite;
   }
@@ -495,16 +553,45 @@
   }
 
   /* Animation delays for staggered effects */
-  .delay-75 { animation-delay: 75ms; }
-  .delay-100 { animation-delay: 100ms; }
-  .delay-150 { animation-delay: 150ms; }
-  .delay-200 { animation-delay: 200ms; }
-  .delay-300 { animation-delay: 300ms; }
-  .delay-400 { animation-delay: 400ms; }
-  .delay-500 { animation-delay: 500ms; }
-  .delay-600 { animation-delay: 600ms; }
-  .delay-700 { animation-delay: 700ms; }
-  .delay-1000 { animation-delay: 1000ms; }
+  .delay-75 {
+    animation-delay: 75ms;
+  }
+
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .delay-150 {
+    animation-delay: 150ms;
+  }
+
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+
+  .delay-600 {
+    animation-delay: 600ms;
+  }
+
+  .delay-700 {
+    animation-delay: 700ms;
+  }
+
+  .delay-1000 {
+    animation-delay: 1000ms;
+  }
 
   /* Initial state for animations */
   .animate-on-enter {
@@ -516,6 +603,7 @@
    Interactive Effects
    ======================================== */
 @layer utilities {
+
   /* Magnetic hover effect */
   .hover-lift {
     @apply transition-all duration-300 ease-out;
@@ -606,20 +694,16 @@
    ======================================== */
 @layer utilities {
   .bg-gradient-warm {
-    background: linear-gradient(
-      135deg,
-      oklch(0.65 0.18 35 / 0.1) 0%,
-      oklch(0.72 0.14 55 / 0.05) 50%,
-      oklch(0.75 0.1 85 / 0.1) 100%
-    );
+    background: linear-gradient(135deg,
+        oklch(0.65 0.18 35 / 0.1) 0%,
+        oklch(0.72 0.14 55 / 0.05) 50%,
+        oklch(0.75 0.1 85 / 0.1) 100%);
   }
 
   .bg-gradient-radial {
-    background: radial-gradient(
-      ellipse at top,
-      oklch(0.65 0.18 35 / 0.08) 0%,
-      transparent 70%
-    );
+    background: radial-gradient(ellipse at top,
+        oklch(0.65 0.18 35 / 0.08) 0%,
+        transparent 70%);
   }
 
   .bg-gradient-mesh {
@@ -713,21 +797,17 @@
 @layer utilities {
   .btn-primary {
     @apply relative overflow-hidden;
-    background: linear-gradient(
-      135deg,
-      oklch(0.65 0.18 35) 0%,
-      oklch(0.6 0.2 30) 100%
-    );
+    background: linear-gradient(135deg,
+        oklch(0.65 0.18 35) 0%,
+        oklch(0.6 0.2 30) 100%);
   }
 
   .btn-primary::before {
     content: '';
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(
-      135deg,
-      oklch(0.7 0.18 35) 0%,
-      oklch(0.65 0.2 30) 100%
-    );
+    background: linear-gradient(135deg,
+        oklch(0.7 0.18 35) 0%,
+        oklch(0.65 0.2 30) 100%);
   }
 
   .btn-primary:hover::before {
@@ -777,11 +857,9 @@
    ======================================== */
 @layer utilities {
   .message-user {
-    background: linear-gradient(
-      135deg,
-      oklch(0.65 0.18 35) 0%,
-      oklch(0.6 0.19 32) 100%
-    );
+    background: linear-gradient(135deg,
+        oklch(0.65 0.18 35) 0%,
+        oklch(0.6 0.19 32) 100%);
     @apply text-white rounded-2xl rounded-br-md;
   }
 
@@ -796,23 +874,19 @@
 @layer utilities {
   .skeleton {
     @apply bg-muted rounded;
-    background: linear-gradient(
-      90deg,
-      oklch(0.92 0.01 85) 0%,
-      oklch(0.96 0.01 85) 50%,
-      oklch(0.92 0.01 85) 100%
-    );
+    background: linear-gradient(90deg,
+        oklch(0.92 0.01 85) 0%,
+        oklch(0.96 0.01 85) 50%,
+        oklch(0.92 0.01 85) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
   }
 
   .dark .skeleton {
-    background: linear-gradient(
-      90deg,
-      oklch(0.25 0.01 45) 0%,
-      oklch(0.3 0.01 45) 50%,
-      oklch(0.25 0.01 45) 100%
-    );
+    background: linear-gradient(90deg,
+        oklch(0.25 0.01 45) 0%,
+        oklch(0.3 0.01 45) 50%,
+        oklch(0.25 0.01 45) 100%);
     background-size: 200% 100%;
   }
 
@@ -822,9 +896,17 @@
     animation: bounce-subtle 1.4s infinite ease-in-out;
   }
 
-  .typing-dot:nth-child(1) { animation-delay: 0s; }
-  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  .typing-dot:nth-child(1) {
+    animation-delay: 0s;
+  }
+
+  .typing-dot:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+
+  .typing-dot:nth-child(3) {
+    animation-delay: 0.4s;
+  }
 }
 
 /* ========================================
@@ -848,15 +930,14 @@
    Special Effects
    ======================================== */
 @layer utilities {
+
   /* Gradient text */
   .text-gradient {
     @apply bg-clip-text text-transparent;
-    background: linear-gradient(
-      135deg,
-      oklch(0.65 0.18 35) 0%,
-      oklch(0.7 0.16 45) 50%,
-      oklch(0.6 0.2 30) 100%
-    );
+    background: linear-gradient(135deg,
+        oklch(0.65 0.18 35) 0%,
+        oklch(0.7 0.16 45) 50%,
+        oklch(0.6 0.2 30) 100%);
   }
 
   /* Spotlight effect */
@@ -867,10 +948,8 @@
   .spotlight::after {
     content: '';
     @apply absolute inset-0 pointer-events-none;
-    background: radial-gradient(
-      600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
-      oklch(0.65 0.18 35 / 0.06) 0%,
-      transparent 40%
-    );
+    background: radial-gradient(600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+        oklch(0.65 0.18 35 / 0.06) 0%,
+        transparent 40%);
   }
 }

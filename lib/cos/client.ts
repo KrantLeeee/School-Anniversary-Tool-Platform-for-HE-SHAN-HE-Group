@@ -63,8 +63,8 @@ export async function uploadBufferToCOS(
         )
     })
 
-    // Step 2: 生成带签名的临时 URL（有效期 86400 秒 = 24 小时）
-    // 即使 Bucket 是私有读，这个 URL 也可以被 Coze 等外部服务访问
+    // Step 2: 生成带签名的临时 URL（有效期提升至 30 天 = 2592000 秒）
+    // 即使 Bucket 是私有读，这个 URL 也可以被长期访问
     const signedUrl = await new Promise<string>((resolve, reject) => {
         cosClient.getObjectUrl(
             {
@@ -72,7 +72,7 @@ export async function uploadBufferToCOS(
                 Region: COS_CONFIG.region,
                 Key: key,
                 Sign: true,
-                Expires: 86400,
+                Expires: 2592000, // 从 1 天 增加到 30 天
             },
             (err: Error | null, data: { Url: string }) => {
                 if (err) reject(err)

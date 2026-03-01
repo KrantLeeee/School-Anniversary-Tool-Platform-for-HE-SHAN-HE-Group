@@ -51,7 +51,10 @@ export async function uploadToCoze(file: File): Promise<UploadedFile> {
     const dateStr = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}${String(date.getDate()).padStart(2, '0')}`
     const uniqueId = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
     const ext = file.name.split('.').pop() || 'bin'
-    const key = `uploads/${dateStr}/${uniqueId}.${ext}`
+    // Environment-based prefix
+    const isProd = process.env.NODE_ENV === 'production'
+    const folder = isProd ? 'uploads' : 'dev-uploads'
+    const key = `${folder}/${dateStr}/${uniqueId}.${ext}`
 
     // 读取文件为 Buffer
     const arrayBuffer = await file.arrayBuffer()
@@ -99,7 +102,9 @@ export async function uploadUrlToCos(imageUrl: string): Promise<string> {
         else if (contentType === 'image/webp') ext = 'webp'
         else if (contentType === 'image/gif') ext = 'gif'
 
-        const key = `ai-generations/${dateStr}/${uniqueId}.${ext}`
+        const isProd = process.env.NODE_ENV === 'production'
+        const folder = isProd ? 'ai-generations' : 'dev-ai-generations'
+        const key = `${folder}/${dateStr}/${uniqueId}.${ext}`
 
         const permanentUrl = await uploadBufferToCOS(key, buffer, contentType)
         return permanentUrl

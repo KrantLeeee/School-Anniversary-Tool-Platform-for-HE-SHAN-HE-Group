@@ -24,9 +24,16 @@ export async function POST(req: NextRequest) {
     const uploadedFile = await uploadToCoze(file)
 
     return Response.json(uploadedFile)
-  } catch (error) {
+  } catch (error: any) {
     console.error('File upload error:', error)
-    const message = error instanceof Error ? error.message : '上传失败'
+    let message = '上传失败'
+
+    if (error.message?.includes('arrears')) {
+      message = '抱歉，当前云存储账户欠费，请联系管理员充值后再使用。'
+    } else if (error.message) {
+      message = error.message
+    }
+
     return Response.json({ error: message }, { status: 500 })
   }
 }

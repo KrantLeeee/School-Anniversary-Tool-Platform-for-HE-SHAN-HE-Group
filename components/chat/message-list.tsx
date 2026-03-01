@@ -23,7 +23,8 @@ interface MessageListProps {
   messages: Message[]
   isStreaming: boolean
   tool: Tool
-  onSendMessage: (message: string) => void
+  onSendMessage: (message: string, attachments?: any[]) => void
+  onRetry?: () => void
 }
 
 function CopyButton({ content }: { content: string }) {
@@ -60,7 +61,7 @@ function CopyButton({ content }: { content: string }) {
 
 import { getAgentSuggestions } from '@/config/agent-suggestions'
 
-export function MessageList({ messages, isStreaming, tool, onSendMessage }: MessageListProps) {
+export function MessageList({ messages, isStreaming, tool, onSendMessage, onRetry }: MessageListProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const { data: session } = useSession()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -185,8 +186,19 @@ export function MessageList({ messages, isStreaming, tool, onSendMessage }: Mess
                         {message.content || '...'}
                       </ReactMarkdown>
                     </div>
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-4 flex gap-2 items-center">
                       {message.content && <CopyButton content={message.content} />}
+                      {message.role === 'assistant' && message.content.includes('抱歉') && index === messages.length - 1 && !isStreaming && onRetry && (
+                        <button
+                          onClick={onRetry}
+                          className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium text-[var(--color-accent-orange)] hover:bg-[var(--color-accent-orange)]/10 transition-colors"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          重试
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (

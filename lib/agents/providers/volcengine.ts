@@ -71,8 +71,11 @@ export abstract class VolcengineAgent {
         if (conversationId) {
             const history = await db.message.findMany({
                 where: { conversationId },
-                orderBy: { createdAt: 'asc' },
+                orderBy: { createdAt: 'desc' }, // Get newest first
+                take: 20, // Only take the last 20 messages
             })
+            // Reverse back to chronological order
+            history.reverse()
 
             for (let i = 0; i < history.length; i++) {
                 const msg = history[i]
@@ -144,10 +147,22 @@ export abstract class VolcengineAgent {
 
         } catch (error: any) {
             console.error('[Volcengine Agent] Stream error:', error)
+            let userMessage = '模型处理失败，请稍后重试。'
+
+            if (error.message?.includes('arrears')) {
+                userMessage = '抱歉，当前 AI 服务账户欠费，无法提供服务。请联系管理员进行充值。'
+            } else if (error.message?.includes('Rate limit')) {
+                userMessage = '当前使用频率过高，请稍等片刻再试。'
+            } else if (error.message?.includes('model_not_found')) {
+                userMessage = '模型配置错误，请检查模型 ID 是否正确。'
+            } else if (error.message) {
+                userMessage = `出现了一些问题: ${error.message}`
+            }
+
             yield {
                 event: 'error',
                 data: {
-                    message: error.message || '模型处理失败'
+                    message: userMessage
                 }
             }
         }

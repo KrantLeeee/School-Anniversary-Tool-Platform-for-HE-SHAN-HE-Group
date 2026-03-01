@@ -23,6 +23,8 @@ npm install || { echo "❌ 错误: npm install 失败"; exit 1; }
 # 4. Prisma 数据库同步 (生成客户端并执行迁移)
 echo "🗄️ 正在生成 Prisma 客户端..."
 npx prisma generate || { echo "❌ 错误: prisma generate 失败"; exit 1; }
+echo "🗄️ 正在更新数据库种子数据 (Seed)..."
+npx prisma db seed || { echo "❌ 错误: prisma db seed 失败"; exit 1; }
 # echo "🗄️ 正在执行数据库迁移..."
 # npx prisma migrate deploy || { echo "❌ 错误: prisma migrate 失败"; exit 1; }
 

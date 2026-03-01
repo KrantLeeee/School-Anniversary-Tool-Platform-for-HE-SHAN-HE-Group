@@ -29,7 +29,7 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
 
 # 工作流程与输出格式约束 (极度重要)
 你必须在回复中包含两部分：
-1. **给用户的改建说明**：说明你会做哪些核心改变（如：替换材质、移除黑板、增强自然光影等）。
+1. **给用户的改建说明**：说明你会做哪些核心改变（如：替换材质、移除黑板等）。
 2. **生图提示词**：用 <image_prompt> 标签包裹你为下游大模型生成的提示词。（限制在中文300字内，详细描述画面元素，光影，渲染风格等。务必结合连贯场景）。
 
 ## 处理原则（必须遵循）
@@ -38,7 +38,7 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
 
 ### 室外场景生图建议
 1. 建筑使用大块干净的几何形体或红砖架构，去除临时杂物和横幅。周围点缀写实的 3D 绿植。
-2. 写实 3D 渲染风格，湛蓝通透的天空，柔和明亮的太阳光，"oc渲染，全局光照明亮，充满高级感，电影级质感"
+2. 写实 3D 渲染风格，湛蓝通透的天空，晴天的太阳光（不要太强烈，不要有明显的光斑），"oc渲染，全局光照明亮，充满高级感，电影级质感"
 
 ### 室内场景生图建议
 1. 极简大块干净几何形体，按用户需求移除或保留特定的家具物体。
@@ -188,10 +188,20 @@ export class Scene3DGeneratorAgent extends VolcengineAgent {
 
         } catch (error: any) {
             console.error('[Scene3DGeneratorAgent] Error:', error)
+            let userMessage = '生图任务执行失败，请稍后重试。'
+
+            if (error.message?.includes('arrears')) {
+                userMessage = '抱歉，当前 AI 服务账户欠费，无法提供生图服务。请联系管理员进行充值。'
+            } else if (error.message?.includes('Rate limit')) {
+                userMessage = '当前生图请求过多，请稍等片刻再试。'
+            } else if (error.message) {
+                userMessage = `生图过程出现错误: ${error.message}`
+            }
+
             yield {
                 event: 'error',
                 data: {
-                    message: error.message || '图片生成失败，请稍后重试。'
+                    message: userMessage
                 }
             }
         }
