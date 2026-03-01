@@ -3,13 +3,14 @@ import { Scene3DGeneratorAgent } from './tools/scene-3d-generator'
 import { SchoolHistoryMuseumGeneratorAgent } from './tools/school-history-museum-generator'
 import { SchoolResearchAssistantAgent } from './tools/school-research-assistant'
 import { SchoolAnniversaryPlannerAgent } from './tools/school-anniversary-planner'
+import { LogoDesignAssistantAgent } from './tools/logo-design-assistant'
 
 /**
  * Agent Registry
  * Maps an internal database Tool ID to its corresponding Agent Implementation
  */
 export class AgentRegistry {
-    private static agents: Record<string, typeof Scene3DGeneratorAgent | typeof SchoolHistoryMuseumGeneratorAgent | typeof SchoolResearchAssistantAgent | typeof SchoolAnniversaryPlannerAgent> = {
+    private static agents: Record<string, typeof Scene3DGeneratorAgent | typeof SchoolHistoryMuseumGeneratorAgent | typeof SchoolResearchAssistantAgent | typeof SchoolAnniversaryPlannerAgent | typeof LogoDesignAssistantAgent> = {
         // Map the database `cozeBotId` or `Tool.id` to an Agent. 
         // Usually, we map an internal string identifier defined in the DB's cozeBotId field 
         // to distinguish it from actual Coze bots now.
@@ -17,6 +18,7 @@ export class AgentRegistry {
         'school-history-museum-generator': SchoolHistoryMuseumGeneratorAgent,
         'school-research-assistant': SchoolResearchAssistantAgent,
         'school-anniversary-planner': SchoolAnniversaryPlannerAgent,
+        'logo-design-assistant': LogoDesignAssistantAgent,
     }
 
     /**

@@ -108,6 +108,28 @@ async function main() {
   })
 
   console.log('Created new tool:', tool4.name)
+
+  const tool5 = await prisma.tool.upsert({
+    where: { id: 'logo-design-tool' },
+    update: {
+      cozeBotId: 'logo-design-assistant',
+      name: '校庆 Logo 设计助手',
+      description: '上传学校校徽、文化资料或参考图，AI 生成专业的校庆 Logo 设计方案，包含设计灵感图和完整的标志释义、色彩释义、图形元素说明文案。',
+      icon: '🎨',
+    },
+    create: {
+      id: 'logo-design-tool',
+      name: '校庆 Logo 设计助手',
+      description: '上传学校校徽、文化资料或参考图，AI 生成专业的校庆 Logo 设计方案，包含设计灵感图和完整的标志释义、色彩释义、图形元素说明文案。',
+      icon: '🎨',
+      cozeType: 'BOT',
+      cozeBotId: 'logo-design-assistant',
+      isEnabled: true,
+      sortOrder: 5,
+    },
+  })
+
+  console.log('Created new tool:', tool5.name)
 }
 
 main()

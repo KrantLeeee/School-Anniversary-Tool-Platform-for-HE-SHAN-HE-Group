@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
         try {
           let fullResponse = ''
           let lastError: string | undefined
+          let agentMetadata: Record<string, any> | null = null  // captures metadata events (e.g. designPrompt)
 
           console.log(`Starting Custom Agent stream for tool: ${tool.name} using ${agent.constructor.name}`)
 
@@ -121,6 +122,13 @@ export async function POST(req: NextRequest) {
               fullResponse += chunk.data.content.answer
             }
 
+            // Capture metadata from agent (e.g. designPrompt for logo agent)
+            // Do NOT forward this to the frontend
+            if (chunk.event === 'metadata' && chunk.data) {
+              agentMetadata = chunk.data
+              continue  // skip SSE emit
+            }
+
             // Send chunk to client frontend matching expected shape
             const sseData = `data: ${JSON.stringify(chunk)}\n\n`
             controller.enqueue(encoder.encode(sseData))
@@ -135,6 +143,8 @@ export async function POST(req: NextRequest) {
                 role: 'assistant',
                 content: messageToSave,
                 contentType: 'text',
+                // Store agent metadata (e.g. designPrompt) in attachments field for retrieval
+                attachments: agentMetadata ? JSON.stringify(agentMetadata) : null,
               },
             })
 

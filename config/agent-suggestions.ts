@@ -40,6 +40,14 @@ export const AGENT_CONFIG_MAP: Record<string, AgentConfig> = {
             '如何针对职业院校设计富有“工匠精神”的校庆氛围？',
             '我想策划一个校庆庆典仪式，包含哪些核心环节？'
         ]
+    },
+    // 校庆 Logo 设计助手
+    'logo-design-tool': {
+        suggestions: [
+            '上传校徽后帮我设计一个70周年校庆Logo方案',
+            '学校主色是蓝色，想做一个90周年的Logo，有什么创意方向？',
+            '我是外语类院校，帮我从"放眼世界"这个校训出发构建Logo意向'
+        ]
     }
 };
 

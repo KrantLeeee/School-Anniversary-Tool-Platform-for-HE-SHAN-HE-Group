@@ -72,10 +72,15 @@ export function ChatLayout({
     }
   }, [handleMouseMove, stopResizing])
 
+  // A bump counter that forces ChatInterface to remount when the user clicks "新建创作"
+  const [newChatKey, setNewChatKey] = useState(0)
+
   const handleNewChat = useCallback(() => {
+    // Always navigate to the no-conversationId URL
     router.push(`/chat?toolId=${tool.id}`)
-    router.refresh()
-    conversationState.refresh() // Ensure we sync from server too
+    // Bump the key to force ChatInterface to remount even if the URL didn't change
+    setNewChatKey(prev => prev + 1)
+    conversationState.refresh()
   }, [router, tool.id, conversationState])
 
   const switchTool = (targetToolId: string) => {
@@ -240,7 +245,7 @@ export function ChatLayout({
         </header>
 
         <ChatInterface
-          key={`${tool.id}-${conversationId || 'new'}`}
+          key={`${tool.id}-${conversationId || 'new'}-${newChatKey}`}
           tool={tool}
           conversationId={conversationId}
           initialMessages={initialMessages}

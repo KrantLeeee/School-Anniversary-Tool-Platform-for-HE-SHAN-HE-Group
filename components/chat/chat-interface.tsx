@@ -94,11 +94,12 @@ export function ChatInterface({
     if (!isRetry) {
       lastRequestRef.current = { message, attachments }
       const attachmentsJson = attachments
-        ? JSON.stringify(attachments.map(({ cozeFileId, name, type, size }) => ({
+        ? JSON.stringify(attachments.map(({ cozeFileId, name, type, size, url }) => ({
           cozeFileId,
           name,
           type,
           size,
+          url,   // ← must persist so AttachmentDisplay can render the thumbnail
         })))
         : null
 
