@@ -38,13 +38,12 @@ export function MessageInput({ onSend, disabled, initialAttachmentUrl }: Message
     }
   }, [initialAttachmentUrl])
 
-  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
+  // ─── Shared upload logic ────────────────────────────────────────────────
+  async function uploadFiles(files: File[]) {
+    if (files.length === 0) return
     setIsUploading(true)
     try {
-      for (const file of Array.from(files)) {
+      for (const file of files) {
         const formData = new FormData()
         formData.append('file', file)
 
@@ -60,11 +59,9 @@ export function MessageInput({ onSend, disabled, initialAttachmentUrl }: Message
         }
 
         const uploadedFile = await response.json()
-
-        let previewUrl: string | undefined
-        if (file.type.startsWith('image/')) {
-          previewUrl = URL.createObjectURL(file)
-        }
+        const previewUrl = file.type.startsWith('image/')
+          ? URL.createObjectURL(file)
+          : undefined
 
         setAttachments((prev) => [
           ...prev,
@@ -80,6 +77,25 @@ export function MessageInput({ onSend, disabled, initialAttachmentUrl }: Message
         fileInputRef.current.value = ''
       }
     }
+  }
+
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    await uploadFiles(Array.from(files))
+  }
+
+  // ─── Clipboard paste ────────────────────────────────────────────────────
+  async function handlePaste(e: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const items = Array.from(e.clipboardData.items)
+    const imageItems = items.filter(item => item.type.startsWith('image/'))
+    if (imageItems.length === 0) return   // no images → let default text paste proceed
+
+    e.preventDefault()   // prevent image data appearing as text in the textarea
+    const imageFiles = imageItems
+      .map(item => item.getAsFile())
+      .filter((f): f is File => f !== null)
+    await uploadFiles(imageFiles)
   }
 
   function handleRemoveAttachment(index: number) {
@@ -147,8 +163,9 @@ export function MessageInput({ onSend, disabled, initialAttachmentUrl }: Message
             value={message}
             onChange={handleInput}
             onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
             className="w-full bg-transparent border-0 focus:ring-0 resize-none py-3 px-4 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 font-light text-base md:text-lg max-h-32 outline-none"
-            placeholder="输入链接或询问任何事情..."
+            placeholder="输入消息，或粘贴图片（⌘V）..."
             rows={1}
             disabled={disabled}
             style={{ minHeight: '52px' }}
